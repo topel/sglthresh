@@ -297,7 +297,7 @@ for i in range(nb_runs):
 
     # In[48]:
     print_thresholds(auto_thresholds, nb_classes)
-    print_thresholds_fh(auto_thresholds, nb_classes)
+    print_thresholds_fh(auto_thresholds, nb_classes, log_fh)
 
     train_pred = train_outputs_numpy>auto_thresholds
     dev_pred = dev_outputs_numpy>auto_thresholds
