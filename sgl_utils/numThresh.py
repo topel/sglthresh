@@ -1,6 +1,6 @@
 from opt import Adam
 from sklearn import metrics
-
+import numpy as np
 
 # ## utility function
 
