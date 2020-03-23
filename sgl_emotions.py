@@ -17,6 +17,8 @@
 
 
 # In[1]:
+import sys
+sys.path.append("sgl_utils")
 
 import torch
 from torch import nn
