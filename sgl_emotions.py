@@ -59,7 +59,6 @@ print(device)
 nb_classes=6
 dataset = 'emotions'
 nb_runs = 10
-log_dir='exp/emotions/21_03_2020/'
 
 # ...load my subsets: train, dev, test
 
@@ -134,8 +133,15 @@ class MultiClassClassifierModule(nn.Module):
         return X
 
 
+all_runs_f1_staticThresh = []
+all_runs_f1_numThresh = []
+all_runs_f1_sglThresh = []
+all_runs_f1_sglThreshSigma = []
 
 for i in range(nb_runs):
+    log_dir = 'exp/emotions/23_03_2020/'
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
 
     log_dir += '%d'%i
     if not os.path.exists(log_dir):
@@ -212,8 +218,6 @@ for i in range(nb_runs):
     # ## make predictions
 
     # In[20]:
-
-
     train_outputs = predict(train_dataloader_noShuffle, y_train_pth, model)
     dev_outputs = predict(dev_dataloader, y_dev_pth, model)
     test_outputs = predict(test_dataloader, y_test_pth, model)
@@ -258,6 +262,10 @@ for i in range(nb_runs):
     print("test"); log_fh.write("test\n")
     print_scores(y_test_numpy, test_pred)
     print_scores_fh(y_test_numpy, test_pred, log_fh)
+
+    prec, rec, f1 = compute_sklearn_micro_f1(y_test_numpy, test_pred)
+    all_runs_f1_staticThresh.append(f1)
+
     # compute_accuracy_from_numpy_tensors(y_test_numpy, test_pred)
 
     # numThresh
@@ -314,6 +322,8 @@ for i in range(nb_runs):
     print_scores(y_test_numpy, test_pred)
     print_scores_fh(y_test_numpy, test_pred, log_fh)
 
+    prec, rec, f1 = compute_sklearn_micro_f1(y_test_numpy, test_pred)
+    all_runs_f1_numThresh.append(f1)
 
     # SGLThresh
 
@@ -321,13 +331,11 @@ for i in range(nb_runs):
     pth_dev_probs = torch.tensor(dev_outputs_numpy, dtype=torch.float).to(device)
     pth_test_probs = torch.tensor(test_outputs_numpy, dtype=torch.float).to(device)
 
-
     pth_train_gt = y_train_pth.to(device, dtype=torch.float)
     pth_dev_gt = y_dev_pth.to(device, dtype=torch.float)
     pth_test_gt = y_test_pth.to(device, dtype=torch.float)
 
     # from torch.optim.lr_scheduler import MultiStepLR
-
 
     # In[66]:
 
@@ -443,9 +451,13 @@ for i in range(nb_runs):
         # In[86]:
         if ind_optim == 0:
             sgl_loss_dev_thresh_list = [-1*el.clone().detach().cpu().numpy() for el in losses]
+            prec, rec, f1 = compute_sklearn_micro_f1(y_test_numpy, test_pred)
+            all_runs_f1_sglThresh.append(f1)
+
         else:
             sgl_loss_dev_threshANDsigma_list = [-1*el.clone().detach().cpu().numpy() for el in losses]
-
+            prec, rec, f1 = compute_sklearn_micro_f1(y_test_numpy, test_pred)
+            all_runs_f1_sglThreshSigma.append(f1)
 
     fontsize=14
     linewidth=2
@@ -461,6 +473,7 @@ for i in range(nb_runs):
     plt.savefig("%s/emotions_F1_numThresh_SGL_DEV_asof_epochs.png"%(log_dir))
     plt.savefig("%s/emotions_F1_numThresh_SGL_DEV_asof_epochs.eps"%(log_dir))
 
+    log_fh.close()
 
     # In[57]:
     np.savez("%s/emotions_F1_numThresh_SGL_DEV_asof_epochs.npz"%(log_dir),
@@ -468,6 +481,22 @@ for i in range(nb_runs):
              metric_asfo_epoch = np.array(metric_asfo_epoch)
             )
 
+all_runs_f1_staticThresh = np.array(all_runs_f1_staticThresh)
+all_runs_f1_numThresh = np.array(all_runs_f1_numThresh)
+all_runs_f1_sglThresh = np.array(all_runs_f1_sglThresh)
+all_runs_f1_sglThreshSigma = np.array(all_runs_f1_sglThreshSigma)
+
+print('static_0.3: %.3f %.3f'%(np.mean(all_runs_f1_staticThresh), np.std(all_runs_f1_staticThresh)))
+print('numThresh: %.3f %.3f'%(np.mean(all_runs_f1_numThresh), np.std(all_runs_f1_numThresh)))
+print('sglThresh: %.3f %.3f'%(np.mean(all_runs_f1_sglThresh), np.std(all_runs_f1_sglThresh)))
+print('sglThreshSigma: %.3f %.3f'%(np.mean(all_runs_f1_sglThreshSigma), np.std(all_runs_f1_sglThreshSigma)))
+
+res_fh = open("%s/../results.txt"%(log_dir),"wt")
+res_fh.write('static_0.3: %.3f %.3f\n'%(np.mean(all_runs_f1_staticThresh), np.std(all_runs_f1_staticThresh)))
+res_fh.write('numThresh: %.3f %.3f\n'%(np.mean(all_runs_f1_numThresh), np.std(all_runs_f1_numThresh)))
+res_fh.write('sglThresh: %.3f %.3f\n'%(np.mean(all_runs_f1_sglThresh), np.std(all_runs_f1_sglThresh)))
+res_fh.write('sglThreshSigma: %.3f %.3f\n'%(np.mean(all_runs_f1_sglThreshSigma), np.std(all_runs_f1_sglThreshSigma)))
+res_fh.close()
 
     # train_pred = train_outputs_numpy>learned_AT_thresholds
     # test_pred = test_outputs_numpy>learned_AT_thresholds
