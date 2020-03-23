@@ -58,7 +58,7 @@ print(device)
 
 nb_classes=6
 dataset = 'emotions'
-nb_runs = 10
+nb_runs = 20
 
 # ...load my subsets: train, dev, test
 
@@ -139,7 +139,7 @@ all_runs_f1_sglThresh = []
 all_runs_f1_sglThreshSigma = []
 
 for i in range(nb_runs):
-    log_dir = 'exp/emotions/23_03_2020/'
+    log_dir = 'exp/emotions/23_03_2020_20runs/'
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
