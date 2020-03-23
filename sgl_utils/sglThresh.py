@@ -4,6 +4,9 @@
 import torch
 from torch import nn
 
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+print("Device in sglThresh.py", device)
+
 class SurrogateHeaviside(torch.autograd.Function):
     # Activation function with surrogate gradient
     #     sigma = 100.0
