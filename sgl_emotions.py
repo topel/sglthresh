@@ -475,13 +475,13 @@ for i in range(nb_runs):
     plt.xticks(fontsize=fontsize)
     plt.yticks(fontsize=fontsize)
     plt.legend(fontsize=fontsize, loc='center right')
-    plt.savefig("%s/%s_F1_numThresh_SGL_DEV_asof_epochs.png"%(dataset, log_dir))
-    plt.savefig("%s/%s_F1_numThresh_SGL_DEV_asof_epochs.eps"%(dataset, log_dir))
+    plt.savefig("%s/%s_F1_numThresh_SGL_DEV_asof_epochs.png"%(log_dir, dataset))
+    plt.savefig("%s/%s_F1_numThresh_SGL_DEV_asof_epochs.eps"%(log_dir, dataset))
 
     log_fh.close()
 
     # In[57]:
-    np.savez("%s/%s_F1_numThresh_SGL_DEV_asof_epochs.npz"%(dataset, log_dir),
+    np.savez("%s/%s_F1_numThresh_SGL_DEV_asof_epochs.npz"%(log_dir, dataset),
              sgl_loss_dev_threshANDsigma_list=np.array(sgl_loss_dev_threshANDsigma_list),
              metric_asfo_epoch = np.array(metric_asfo_epoch)
             )
