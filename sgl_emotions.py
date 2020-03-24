@@ -44,9 +44,6 @@ from sgl_utils.numThresh import *
 from sgl_utils.sglThresh import *
 from sgl_utils.misc import *
 
-# In[3]:
-
-
 # Device configuration
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 print(device)
@@ -56,13 +53,22 @@ print(device)
 # In[5]:
 
 
-nb_classes=6
-dataset = 'emotions'
-nb_runs = 20
+nb_runs = 10
+# dataset = 'emotions'
+dataset = 'bibtex'
+
+if dataset == 'emotions':
+    batch_size_train=6
+    nb_classes = 6
+elif dataset == 'bibtex':
+    batch_size_train = 16
+    nb_classes = 159
+else:
+    batch_size_train = 8
 
 # ...load my subsets: train, dev, test
 
-arr = np.load("datasets/emotions/%s_train_dev_test.npz"%dataset)
+arr = np.load("datasets/%s/%s_train_dev_test.npz"%(dataset, dataset))
 # print(arr["train_proba"])
 
 X_train_numpy = arr["X_train_numpy"]
@@ -94,9 +100,8 @@ hidden_dim = 200
 # output_dim = len(np.unique(y_train.rows))
 output_dim = nb_classes
 
-
 train_dataset = data.TensorDataset(X_train_pth, y_train_pth) # create your datset
-train_dataloader = data.DataLoader(train_dataset, batch_size=6, shuffle=True)
+train_dataloader = data.DataLoader(train_dataset, batch_size=batch_size_train, shuffle=True)
 train_dataloader_noShuffle = data.DataLoader(train_dataset, batch_size=32, shuffle=False)
 
 dev_dataset = data.TensorDataset(X_dev_pth, y_dev_pth) # create your datset
@@ -139,7 +144,7 @@ all_runs_f1_sglThresh = []
 all_runs_f1_sglThreshSigma = []
 
 for i in range(nb_runs):
-    log_dir = 'exp/emotions/23_03_2020_20runs/'
+    log_dir = 'exp/%s/23_03_2020_20runs/'%(dataset)
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
@@ -470,13 +475,13 @@ for i in range(nb_runs):
     plt.xticks(fontsize=fontsize)
     plt.yticks(fontsize=fontsize)
     plt.legend(fontsize=fontsize, loc='center right')
-    plt.savefig("%s/emotions_F1_numThresh_SGL_DEV_asof_epochs.png"%(log_dir))
-    plt.savefig("%s/emotions_F1_numThresh_SGL_DEV_asof_epochs.eps"%(log_dir))
+    plt.savefig("%s/%s_F1_numThresh_SGL_DEV_asof_epochs.png"%(dataset, log_dir))
+    plt.savefig("%s/%s_F1_numThresh_SGL_DEV_asof_epochs.eps"%(dataset, log_dir))
 
     log_fh.close()
 
     # In[57]:
-    np.savez("%s/emotions_F1_numThresh_SGL_DEV_asof_epochs.npz"%(log_dir),
+    np.savez("%s/%s_F1_numThresh_SGL_DEV_asof_epochs.npz"%(dataset, log_dir),
              sgl_loss_dev_threshANDsigma_list=np.array(sgl_loss_dev_threshANDsigma_list),
              metric_asfo_epoch = np.array(metric_asfo_epoch)
             )
