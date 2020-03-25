@@ -53,6 +53,16 @@ def print_scores_fh(gt_y, preds, fh):
     fh.write('\nset acc: %.3f\n'%(set_accuracy))
 
 
+def micro_prec_rec_fscore(gt_y, preds):
+    prec, rec, fscore, support = precision_recall_fscore_support(gt_y, preds, pos_label=1, average='micro')
+    return prec, rec, fscore
+
+
+def micro_prec_rec_fscore_class(gt_y, preds):
+    prec, rec, fscore, support = precision_recall_fscore_support(gt_y, preds, pos_label=1, average=None)
+    return prec, rec, fscore
+
+
 def compute_sklearn_micro_f1(gt_y, preds):
     p2, r2, fscore2, _ = precision_recall_fscore_support(gt_y, preds, pos_label=1, average='micro')
     return p2, r2, fscore2

@@ -54,8 +54,8 @@ print(device)
 
 
 nb_runs = 10
-# dataset = 'emotions'
-dataset = 'bibtex'
+dataset = 'emotions'
+# dataset = 'bibtex'
 
 if dataset == 'emotions':
     batch_size_train=6
@@ -143,8 +143,10 @@ all_runs_f1_numThresh = []
 all_runs_f1_sglThresh = []
 all_runs_f1_sglThreshSigma = []
 
+all_runs_f1_dev_array = []
+
 for i in range(nb_runs):
-    log_dir = 'exp/%s/23_03_2020_20runs/'%(dataset)
+    log_dir = 'exp/%s/25_03_2020/'%(dataset)
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
@@ -271,6 +273,20 @@ for i in range(nb_runs):
     prec, rec, f1 = compute_sklearn_micro_f1(y_test_numpy, test_pred)
     all_runs_f1_staticThresh.append(f1)
 
+    f1s = []
+    for t in range(0, 100):
+        t /= 100.
+        dev_pred = dev_outputs_numpy > t
+
+        # p, r, f1 = micro_prec_rec_fscore(y_dev_numpy, dev_pred)
+        _, _, f1 = micro_prec_rec_fscore_class(y_dev_numpy, dev_pred)
+        f1s.append(f1)
+
+    f1s = np.array(f1s)
+    all_runs_f1_dev_array.append(f1s)
+
+    # print(f1s)
+
     # compute_accuracy_from_numpy_tensors(y_test_numpy, test_pred)
 
     # numThresh
@@ -344,7 +360,7 @@ for i in range(nb_runs):
 
     # In[66]:
 
-    sigma_init=40.
+    sigma_init=20.
     # criterion = torch.nn.BCELoss(reduction="mean")
     criterion = F1_loss_objective
 
@@ -502,6 +518,35 @@ res_fh.write('numThresh: %.3f %.3f\n'%(np.mean(all_runs_f1_numThresh), np.std(al
 res_fh.write('sglThresh: %.3f %.3f\n'%(np.mean(all_runs_f1_sglThresh), np.std(all_runs_f1_sglThresh)))
 res_fh.write('sglThreshSigma: %.3f %.3f\n'%(np.mean(all_runs_f1_sglThreshSigma), np.std(all_runs_f1_sglThreshSigma)))
 res_fh.close()
+
+all_runs_f1_dev_array = np.array(all_runs_f1_dev_array)
+moyennes = np.mean(all_runs_f1_dev_array, axis=0)
+stds = np.std(all_runs_f1_dev_array, axis=0)
+print(all_runs_f1_dev_array.shape, moyennes.shape, stds.shape)
+fontsize=14
+linewidth=2
+plt.figure(figsize=(8,6))
+couleurs = ['k', 'g', 'r', 'c', 'm', 'b']
+vecteur_zero = np.zeros_like(moyennes.shape[0])
+for ind in range(moyennes[0].shape[0]):
+    moy = moyennes[:,ind]
+    std = stds[:,ind]
+    if ind==0: print(moy, std)
+    plt.plot(range(0, 100), moy, couleurs[ind], label='%d'%ind)
+    plt.fill_between(range(0, 100), moy - std, moy + std,
+                 color=couleurs[ind], alpha=0.2)
+    # plt.fill_between(range(0, 100), np.max(moy - std, vecteur_zero), moy + std,
+    #              color=couleurs[ind], alpha=0.2)
+# plt.plot([23, 23], [0, 0.6], '-k')
+plt.xlabel("threshold", fontsize=fontsize)
+plt.ylabel("F1", fontsize=fontsize)
+plt.xlim([0,100])
+plt.xticks([0, 20, 40, 60, 80, 100], [0, 0.2, 0.4, 0.6, 0.8, 1], fontsize=fontsize)
+plt.yticks(fontsize=fontsize)
+plt.ylim([0,0.78])
+# plt.legend(fontsize=fontsize, loc='upper right')
+plt.savefig("exp/emotions/emotions_F1_DEV_asof_threshold.png")
+# plt.savefig("exp/emotions/emotions_F1_DEV_asof_threshold.eps")
 
     # train_pred = train_outputs_numpy>learned_AT_thresholds
     # test_pred = test_outputs_numpy>learned_AT_thresholds
