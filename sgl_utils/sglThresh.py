@@ -23,7 +23,7 @@ class SurrogateHeaviside(torch.autograd.Function):
         input, sigma = ctx.saved_tensors
         grad_input = grad_output.clone()
         # approximation of the gradient using sigmoid function
-        grad = grad_input * torch.sigmoid(sigma * input) * torch.sigmoid(-sigma * input)
+        grad = grad_input * sigma * torch.sigmoid(sigma * input) * torch.sigmoid(-sigma * input)
 
         grad_sigma = grad_input * input * torch.sigmoid(sigma * input) * torch.sigmoid(-sigma * input)
 

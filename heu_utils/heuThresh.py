@@ -1,3 +1,14 @@
+def binarize_probs(probs, thresholds):
+    nb_classes = probs.shape[-1]
+    binarized_output = np.zeros_like(probs)
+
+    for k in range(nb_classes):
+        binarized_output[:, k] = (np.sign(probs[:, k] - thresholds[k]) + 1) // 2
+
+    return binarized_output
+
+
+
 def heu_threshold_opti(y_true, y_pred, init_thresholds):
     """optimization routine to optimize AT F-score
 
