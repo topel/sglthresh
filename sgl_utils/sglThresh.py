@@ -4,7 +4,8 @@
 import torch
 from torch import nn
 
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+device = 'cpu'
+# device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 print("Device in sglThresh.py", device)
 
 class SurrogateHeaviside(torch.autograd.Function):
@@ -79,4 +80,38 @@ def F1_loss_objective(binarized_output, y_true):
     f1 = 2 * ((precision * recall) / (precision + recall + epsilon))
     #     return precision, recall, f1
     return - f1.mean()
+
+
+def macro_F1_loss_objective(binarized_output, y_true):
+    # let's first convert binary vector prob into logits
+    #     prob = torch.clamp(prob, 1.e-12, 0.9999999)
+
+    epsilon = torch.tensor(1e-12)
+    true_positives = torch.sum(y_true * binarized_output, dim=0)
+    predicted_positives = torch.sum(binarized_output, dim=0)
+    positives = torch.sum(y_true, dim=0)
+    precision = true_positives / (predicted_positives + epsilon)
+    recall = true_positives / (positives + epsilon)
+
+    f1 = 2 * ((precision * recall) / (precision + recall + epsilon))
+    #     return precision, recall, f1
+    return - f1.mean()
+
+
+def setAcc_loss_objective(binarized_output, y_true):
+    # let's first convert binary vector prob into logits
+    #     prob = torch.clamp(prob, 1.e-12, 0.9999999)
+
+    #     average = 'macro'
+    average = 'micro'
+    epsilon = torch.tensor(1e-12)
+
+    if average == 'micro':
+        y_true = torch.flatten(y_true)
+        binarized_output = torch.flatten(binarized_output)
+
+    true_positives = torch.sum(y_true * binarized_output, dim=0)
+    #     return precision, recall, f1
+    return - true_positives.mean()
+
 

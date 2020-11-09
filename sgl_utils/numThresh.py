@@ -24,8 +24,10 @@ def calculate_f1(y_true, output, thresholds, average):
     binarized_output = np.zeros_like(output)
     #     print('class num:', classes_num)
 
-    for k in range(classes_num):
-        binarized_output[:, k] = (np.sign(output[:, k] - thresholds[k]) + 1) // 2
+#     for k in range(classes_num):
+#         binarized_output[:, k] = (np.sign(output[:, k] - thresholds[k]) + 1) // 2
+
+    binarized_output = 1*(output>thresholds)
 
     if average == 'micro':
         return metrics.f1_score(y_true.flatten(), binarized_output.flatten())
