@@ -1,5 +1,6 @@
-# sglthresh
-Surrogate Gradient Learning for estimating multilabel classification thresholds
+# SGLThresh
+
+## Surrogate Gradient Learning for estimating multilabel classification thresholds
 
 In this work, we propose to optimize thresholds used to do multilabel classification. We propose to use gradient descent to optimize F-score (aka F1) by estimating the best threshold values using gradient descent. 
 
